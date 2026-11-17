@@ -1,0 +1,4 @@
+numpy
+matplotlib
+qrcode[pil]    # qr_repo.py
+zxing-cpp      # qr_repo.py, optional decoding check

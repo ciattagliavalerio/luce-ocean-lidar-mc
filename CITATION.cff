@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Monte Carlo model of the coupled air–sea system for the LUCE spaceborne lidar mission"
+abstract: >-
+  Fortran 90 Monte Carlo radiative transfer model of the lidar signal of a
+  spaceborne ocean lidar, including the wind-roughened air-sea interface
+  (Cox-Munk slopes with Smith shadowing), surface glint, Gaussian beam
+  illumination and a finite receiver field of view. Presented at the AISAM
+  Students' Conference 2026 (Festival della Meteorologia, Rovereto).
+authors:
+  - family-names: Ciattaglia
+    given-names: Valerio
+    affiliation: "Università di Roma Tor Vergata"
+version: v1.0-aisam2026
+date-released: 2026-11-21
+license: MIT
+repository-code: "https://github.com/ciattagliavalerio/luce-ocean-lidar-mc"
+keywords:
+  - Monte Carlo
+  - radiative transfer
+  - ocean lidar
+  - air-sea interface
+  - Fortran

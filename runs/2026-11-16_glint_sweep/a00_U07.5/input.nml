@@ -1,0 +1,106 @@
+! =============================================================================
+!  MC_water — input file (Fortran namelist)
+!
+!  Case: LUCE-like reference configuration (532 nm).
+!
+!  Usage, from the run directory:   ../../mc_water input.nml
+!
+!  Rules:
+!   - Every variable below is REQUIRED: the program stops and lists the
+!     missing ones. There are no default values.
+!   - One run = one combination of parameters (no internal sweeps): for a
+!     sweep, prepare one input file per combination and run them in parallel.
+!   - Text after '!' is a comment. Units in square brackets; [-] = dimensionless.
+!   - Groups (&name ... /) can be in any order.
+!   - The input actually used, with the actual random seed, is copied by the
+!     program to input_used.nml in the run directory.
+! =============================================================================
+
+! -----------------------------------------------------------------------------
+!  Lidar geometry and receiver
+! -----------------------------------------------------------------------------
+&geometry
+  theta_v       = 0.0         ! Off-nadir angle of the lidar in air [deg]; 0 <= theta_v < 90.
+  fov           = 30.0e-6     ! Full-angle field of view of the receiver [rad]; > 0.
+  beam_div      = 30.0e-6     ! Full-angle divergence of the laser beam [rad]; > 0, measured at
+                              ! 1/e^2 of the peak intensity (usual manufacturer convention).
+                              ! Beam std per angular component sigma_g = beam_div/4.
+                              ! Set equal to fov (LUCE value not available).
+  hlidar        = 450000.0    ! Orbital altitude H [m]; > 0.
+  r_tel         = 0.5         ! Telescope radius [m]; > 0. Diameter D = 2 r_tel.
+  sampling_mode = 'gaussian'  ! Angular sampling of the emitted beam:
+                              !   'gaussian'     = Gaussian, standard deviation beam_div/4
+                              !                    per angular component;
+                              !   'uniform_cone' = uniform inside the cone of half-angle beam_div/2.
+/
+
+! -----------------------------------------------------------------------------
+!  Atmosphere
+! -----------------------------------------------------------------------------
+&atmosphere
+  tau0 = 0.0                  ! One-way optical depth of the atmosphere at nadir [-]; >= 0.
+                              ! 0 = no atmospheric attenuation. Round-trip transmittance
+                              ! exp(-2 tau0 / cos(theta_v)).
+/
+
+! -----------------------------------------------------------------------------
+!  Sea surface
+! -----------------------------------------------------------------------------
+&surface
+  n_water             = 1.33     ! Refractive index of seawater (real part) [-]; > 1.
+  u10                 = 7.5      ! Wind speed at 10 m [m/s]; >= 0. Sets the Cox-Munk slope
+                                 ! variance sigma2 = 0.003 + 0.00512 u10 (Cox and Munk
+                                 ! 1954, clean surface). NOTE: u10 = 0 gives sigma2 = 0.003,
+                                 ! i.e. small waves, NOT a flat sea: use flat_sea for that.
+  flat_sea            = .false.  ! .true.  = flat sea, sigma2 = 0 (u10 is not used for the slopes);
+                                 ! .false. = rough sea, sigma2 from u10.
+  internal_reflection = .true.   ! Photons reaching the surface from below:
+                                 !   .true.  = Fresnel split: the reflected part (including
+                                 !             total internal reflection) goes back into the water;
+                                 !   .false. = all of them leave the water (no internal reflection).
+                                 ! The transmitted signal toward the receiver is scored in both cases.
+/
+
+! -----------------------------------------------------------------------------
+!  Inherent optical properties of the water (homogeneous column)
+! -----------------------------------------------------------------------------
+&water
+  kext  = 0.15                ! Beam attenuation coefficient c [1/m]; > 0. Mean free path 1/c.
+  omega = 0.85                ! Single-scattering albedo omega = b/c [-]; 0 < omega < 1.
+                              ! Absorption a = (1 - omega) c, scattering b = omega c.
+  g     = 0.92                ! Asymmetry factor of the Henyey-Greenstein phase function,
+                              ! g = <cos(theta)> [-]; -1 < g < 1.
+/
+
+! -----------------------------------------------------------------------------
+!  Numerical parameters
+! -----------------------------------------------------------------------------
+&numerics
+  nphotons = 1000000          ! Number of photons [-]; > 0. About 1 min per 10^6 photons on one core.
+                              ! At least 10^7 for the time-based attenuation K_t.
+  seed     = 1                ! Random seed [-]; >= 0.
+                              !   0   = random seed, drawn from the system clock; the seed actually
+                              !         used is printed and written in the output headers and in
+                              !         input_used.nml, so the run can be repeated;
+                              !   > 0 = reproducible run: same seed, same input -> identical output.
+  wmin     = 1.0e-4           ! Photon weight below which the photon is terminated [-]; 0 < wmin < 1.
+  N_LUT    = 1001             ! Number of points of the Fresnel look-up tables in cos(incidence) [-]; >= 2.
+  maxsca   = 5                ! Highest scattering order recorded separately [-]; >= 1.
+                              ! Output columns: total + orders 1..maxsca (plots need maxsca >= 3).
+/
+
+! -----------------------------------------------------------------------------
+!  Receiver sampling (output grid)
+! -----------------------------------------------------------------------------
+&receiver
+  dt_bin = 8.983              ! Sampling interval of the receiver [ns]; > 0. Sets the bin thickness
+                              ! dz = c dt_bin cos(alpha_r) / (2 n_water), with c = 299792458 m/s and
+                              ! cos(alpha_r) = sqrt(1 - (sin(theta_v)/n_water)^2): a time t is a
+                              ! one-way path in water s_p = c t / (2 n_water), projected as
+                              ! z_t = s_p cos(alpha_r) (Shangguan et al. 2025, Eq. 24 and 27).
+                              ! Here 8.983 ns: dz = 0.99997 m, chosen to give dz ~ 1 m.
+  n_bins = 100                ! Number of samples of the subsurface window [-]; >= 1.
+                              ! zmax = n_bins dz; contributions deeper than zmax (real or
+                              ! time-based) are not recorded. Output in signal per metre, so
+                              ! profiles with different dz can be compared directly.
+/

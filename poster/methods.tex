@@ -1,0 +1,221 @@
+% methods.tex - Methods of the LUCE poster, plus the end-to-end scheme and the
+% coloured chips of the Background and aims box (they share the step colours).
+%   \methodscells : the six cells of the photon cycle, stacked, with the flow arrows.
+%   \picModel     : the big drawing of the whole model (schematic, not to scale).
+% Colours (palette.tex): lucestep1..5 for the steps, lucereal / lucetime for the
+% two profiles (step 6), as in the Results graphs. The step numbers are repeated
+% in the drawing as a cue that does not rely on colour.
+
+% ---------------------------------------------------------------------------
+% Cells
+% ---------------------------------------------------------------------------
+\newlength{\mcellw}\setlength{\mcellw}{29.6cm}   % Text width of a cell.
+\tikzset{
+  flowarrow/.style={line width=5pt, rounded corners=7mm, -{Stealth[length=14pt,width=16pt]}},
+  flowlabel/.style={font=\fflow, inner sep=1mm},
+}
+% Inline step number, as in the cells and in the drawing.
+\newcommand{\stepnum}[2]{\tikz[baseline=(c.base)]\node[circle, fill=#2, text=white, font=\fflow\bfseries,
+  inner sep=0pt, minimum size=1.0cm] (c) {#1};}
+% Cell: #1 number, #2 title, #3 frame colour, #4 header fill, #5 body, #6 position.
+\newcommand{\mcell}[6]{%
+  \node[fill=white, rounded corners=6mm, text width=\mcellw, inner xsep=6mm, inner ysep=3.5mm,
+        anchor=north, align=left, font=\fbody, #6] (S#1) {\rule{0pt}{1.25cm}\par #5\par};
+  \begin{scope}
+    \clip[rounded corners=6mm] (S#1.south west) rectangle (S#1.north east);
+    \path[#4] (S#1.north west) rectangle ([yshift=-1.4cm]S#1.north east);
+  \end{scope}
+  \draw[#3, line width=3pt, rounded corners=6mm] (S#1.south west) rectangle (S#1.north east);
+  \node[circle, fill=white, text=#3, font=\fflowtitle\bfseries, inner sep=0pt, minimum size=1.05cm]
+        (N#1) at ([xshift=1.0cm,yshift=-0.7cm]S#1.north west) {#1};
+  \node[anchor=west, text=white, font=\fflowtitle\bfseries, inner sep=0pt] at ([xshift=4mm]N#1.east) {#2};
+}
+% Label column and formula column inside a cell.
+\newcommand{\mrow}[3]{\begin{minipage}[c]{#1}\raggedright #2\end{minipage}\hfill
+  \begin{minipage}[c]{\dimexpr\mcellw-#1-5mm\relax}\centering #3\end{minipage}\par}
+
+\newcommand{\methodscells}{%
+\begin{tikzpicture}
+  \mcell{1}{Launch}{lucestep1}{fill=lucestep1}{%
+    \mrow{14.0cm}{Two small deviation angles from the tilted beam axis, independent and Gaussian:}
+      {\eq{P(\theta_x, \theta_y) = \frac{1}{2\pi\sigma_g^2}\exp\!\left(-\frac{\theta_x^2+\theta_y^2}{2\sigma_g^2}\right)}}%
+  }{at={(0,0)}}
+  \mcell{2}{Air--sea interface}{lucestep2}{fill=lucestep2}{%
+    Facet slopes from Cox--Munk [1], variance $\sigma^2$ set by the wind; the photon enters the water with the Fresnel transmittance $T_F$, corrected for masking--shadowing $\Lambda$ [2]:
+    \eq{p(s_x, s_y) = \frac{1}{\pi\sigma^2}\exp\!\left(-\frac{s_x^2+s_y^2}{\sigma^2}\right) \qquad W_N \rightarrow \frac{T_F}{1+\Lambda_i+\Lambda_t}\,W_N}%
+  }{below=1.1cm of S1}
+  \mcell{3}{In-water walk}{lucestep3}{fill=lucestep3}{%
+    Free path $s$ (attenuation $c$); at the collision the weight keeps the fraction $\omega$ and the direction turns by $\theta$, from the Henyey--Greenstein phase function:
+    \eq{s = -\frac{\ln\xi}{c} \qquad W_N \rightarrow \omega\,W_N \qquad \tilde\beta(\cos\theta) = \frac{1-g^2}{4\pi\,(1+g^2-2g\cos\theta)^{3/2}}}%
+  }{below=1.1cm of S2}
+  \mcell{4}{FOV check}{lucestep4}{fill=lucestep4}{%
+    Is the collision inside the receiver cone, i.e.\ the footprint ellipse shifted rigidly along the refracted axis? If not, the photon walks on unscored.%
+  }{below=1.1cm of S3}
+  \mcell{5}{Local estimate}{lucestep5}{fill=lucestep5}{%
+    \mrow{12.0cm}{At every collision in the FOV, the fraction that reaches the telescope (area $A_r$) [4]:}
+      {\eq{E(z) = W_N\,\frac{A_r}{R_\mathrm{eff}^2}\;\tilde\beta(\theta)\;e^{-c\,d'}\;T_a\,T_t}}
+    \vspace{1mm}
+    \mrow{7.0cm}{At every surface hit, the glint [2]:}
+      {\eq{E_\mathrm{glint} = \frac{R_F\;p(\mathbf{s}_\mathrm{req})\;G}{4\cos\theta_0\cos^4\theta_n}\;\frac{A_r}{R_\mathrm{sat}^2}\;T_a \qquad G = \frac{1}{1+\Lambda_i+\Lambda_r}}}%
+  }{below=1.1cm of S4}
+  \mcell{6}{Profiles}{luceframe}{fill=lucereal}{%
+    Each score is added at the \textcolor{lucereal}{\textbf{real depth $z$}} of the collision and at the \textcolor{lucetime}{\textbf{time-based depth $z_t$}} inferred from the time of flight, by scattering order.%
+  }{below=1.1cm of S5}
+  % Header of cell 6 split in the two data colours (real | time-based), no blend.
+  \begin{scope}
+    \clip[rounded corners=6mm] (S6.south west) rectangle (S6.north east);
+    \fill[lucetime] (S6.north) rectangle ([yshift=-1.4cm]S6.north east);
+  \end{scope}
+  \draw[luceframe, line width=3pt, rounded corners=6mm] (S6.south west) rectangle (S6.north east);
+  % Main flow.
+  \foreach \a/\b in {1/2,2/3,3/4,5/6}
+    \draw[flowarrow, luceframe] (S\a.south) -- (S\b.north);
+  \draw[flowarrow, luceframe] (S4.south) -- (S5.north)
+    node[midway, right=4mm, flowlabel, text=lucestep4] {inside the FOV};
+  % Outside the FOV: back to the walk.
+  \draw[flowarrow, lucestep4] (S4.east) -- ++(1.3,0) |- ([yshift=-0.8cm]S3.east);
+  \path let \p1=(S4.east), \p2=([yshift=-0.8cm]S3.east) in
+    node[flowlabel, text=lucestep4, rotate=90] at (\x1+0.62cm, {(\y1+\y2)/2}) {outside FOV};
+  % After the profiles: next collision.
+  \draw[flowarrow, lucestep3] (S6.east) -- ++(3.0,0) |- ([yshift=0.8cm]S3.east);
+  \path let \p1=(S6.east), \p2=(S4.east) in
+    node[flowlabel, text=lucestep3, rotate=90] at (\x1+2.2cm, {(\y1+\y2)/2})
+      {next collision while $W_N > W_\mathrm{min}$};
+  % Glint: from the surface straight to the local estimate.
+  \draw[flowarrow, lucestep5] (S2.west) -- ++(-1.3,0) |- (S5.west);
+  \path let \p1=(S3.west), \p2=(S4.west) in
+    node[flowlabel, text=lucestep5, rotate=90] at (\x1-0.62cm, {(\y1+\y2)/2}) {glint at the surface};
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------------
+% Big drawing of the model
+% ---------------------------------------------------------------------------
+% Geometry (drawing units): telescope T = (-9,17), off-nadir angle drawn at 24 deg,
+% refracted angle 17.8 deg (sin 24 / 1.33); footprint centre (-1.43,0), half-length 4.4.
+% Under water the FOV is the footprint shifted rigidly along the refracted axis.
+\tikzset{
+  walk/.style={lucestep3, line width=3.5pt, -{Stealth[length=13pt,width=12pt]}, shorten >=0.42cm},
+  score/.style={lucestep5, line width=2.4pt, dash pattern=on 9pt off 5pt, postaction={decorate},
+    decoration={markings, mark=at position 0.18 with {\arrow{Stealth[length=13pt,width=12pt]}}}},
+  dlab/.style={font=\fdraw\bfseries, inner sep=1mm},
+}
+\newcommand{\picModel}{%
+\begin{tikzpicture}[scale=0.9]
+  % --- Sky, water and receiver field of view (4) ---------------------------
+  \begin{scope}
+  \clip[rounded corners=8mm] (-20.5,-22) rectangle (21.2,22.4);
+  \shade[top color=luceframe!12, bottom color=white] (-20.5,0) rectangle (21.2,22.4);
+  \shade[top color=luceframe!6, bottom color=luceframe!26]
+    plot[domain=-20.5:21.2, samples=160] (\x,{0.35*sin(360*\x/4.6)}) -- (21.2,-22) -- (-20.5,-22) -- cycle;
+  \fill[lucestep4, opacity=0.10] (-9.82,16.63) -- (-5.83,0) -- (2.97,0) -- (-8.18,17.37) -- cycle;
+  \fill[lucestep4, opacity=0.10] (-5.83,0) -- (0.92,-22) -- (9.72,-22) -- (2.97,0) -- cycle;
+  \draw[lucestep4, line width=2.5pt] (-9.82,16.63) -- (-5.83,0) -- (0.92,-22);
+  \draw[lucestep4, line width=2.5pt] (-8.18,17.37) -- (2.97,0) -- (9.72,-22);
+  \end{scope}
+  \draw[luceframe, line width=2pt, rounded corners=8mm] (-20.5,-22) rectangle (21.2,22.4);
+  % --- Gaussian beam (1) -----------------------------------------------------
+  \fill[lucestep1, opacity=0.22] (-9.23,16.90) -- (-3.13,0) -- (0.27,0) -- (-8.77,17.10) -- cycle;
+  \begin{scope}[shift={(-9,17)}, rotate=24]
+    \draw[lucestep1, line width=1.6pt] (-1.9,-7.5) -- (1.9,-7.5);
+    \draw[lucestep1, line width=4pt] plot[domain=-1.9:1.9, samples=60] (\x,{-7.5+1.7*exp(-(\x*\x)/(2*0.45*0.45))});
+  \end{scope}
+  % --- Footprint and sea surface (2) ----------------------------------------
+  \draw[lucestep4, line width=2.5pt, fill=lucestep4!15] (-1.43,0) ellipse (4.4 and 0.8);
+  \draw[lucestep2, line width=4pt] plot[domain=-20.4:21.1, samples=160] (\x,{0.35*sin(360*\x/4.6)});
+  % --- Off-nadir view --------------------------------------------------------
+  \draw[lucelimit, line width=1.8pt, dash pattern=on 8pt off 5pt] (-9,17) -- (-9,11.6);
+  \draw[lucelimit, line width=1.8pt] (-9,13.4) arc (-90:-66:3.6);
+  \node[font=\fdraw, text=lucetext] at (-8.05,12.45) {$\alpha$};
+  % --- Satellite with the lidar telescope (aperture at T) -------------------
+  \begin{scope}[shift={(-9,17)}, rotate=24]
+    \fill[luceframe!55] (-7.2,1.55) rectangle (-1.9,2.45);
+    \fill[luceframe!55] (1.9,1.55) rectangle (7.2,2.45);
+    \foreach \x in {-6.14,-5.08,-4.02,-2.96,2.96,4.02,5.08,6.14}
+      \draw[white, line width=1.2pt] (\x,1.55) -- (\x,2.45);
+    \draw[white, line width=1.2pt] (-7.2,2.0) -- (-1.9,2.0) (1.9,2.0) -- (7.2,2.0);
+    \draw[luceframe, line width=3pt] (-1.9,2.0) -- (-1.3,2.0) (1.3,2.0) -- (1.9,2.0);
+    \fill[luceframe, rounded corners=2mm] (-1.3,1.0) rectangle (1.3,3.0);
+    \fill[lucelimit!80] (-0.9,0) -- (0.9,0) -- (0.6,1.0) -- (-0.6,1.0) -- cycle;
+    \fill[luceframe!80!black] (0,0) ellipse (0.9 and 0.22);
+  \end{scope}
+  % --- Photon: launch (1), facet and normal (2), walk (3) --------------------
+  \draw[lucestep1, line width=3.5pt, -{Stealth[length=14pt,width=13pt]}] (-9,17) -- (-2.25,0.1);
+  \draw[lucestep2, line width=6pt, line cap=round] (-3.01,0.34) -- (-1.39,-0.43);
+  \draw[lucestep2, line width=3pt, -{Stealth[length=12pt,width=11pt]}] (-2.2,-0.05) -- (-1.17,2.12)
+    node[anchor=east, font=\fdraw, text=lucestep2, inner sep=2mm] {$\hat{\mathbf{n}}$};
+  \draw[walk] (-2.2,-0.05) -- (-1.0,-5.6);
+  \draw[walk] (-1.0,-5.6) -- (2.6,-8.4);
+  \draw[walk] (2.6,-8.4) -- (-3.6,-12.2);
+  \draw[walk] (-3.6,-12.2) -- (3.8,-15.6);
+  \draw[lucestep3, line width=3.5pt, dash pattern=on 8pt off 6pt] (3.8,-15.6) -- (5.2,-19.0);
+  % Scattering angle at the first collision.
+  \draw[lucestep3, line width=1.8pt, dash pattern=on 6pt off 4pt] (-1.0,-5.6) -- (-0.54,-7.75);
+  \draw[lucestep3, line width=2pt] (-1.0,-5.6) ++(-77.8:1.7) arc (-77.8:-37.9:1.7);
+  \node[font=\fdraw, text=lucestep3] at (0.33,-7.75) {$\theta$};
+  % --- Local estimate (5): every collision in the FOV scores toward T --------
+  % In the air each score keeps heading for the telescope T; drawn up to y = 6 only.
+  \draw[score, -{Stealth[length=13pt,width=12pt]}] (-1.0,-5.6) -- (-2.80,0) -- (-4.99,6);
+  \draw[score, -{Stealth[length=13pt,width=12pt]}] (2.6,-8.4) -- (-0.10,0) -- (-3.24,6);
+  \draw[score, -{Stealth[length=13pt,width=12pt]}] (3.8,-15.6) -- (-1.21,0) -- (-3.96,6);
+  % Glint from a mirroring facet.
+  \draw[lucestep2, line width=6pt, line cap=round] (0.11,0.20) -- (1.69,0.46);
+  \draw[lucestep5, line width=3pt, dash pattern=on 12pt off 4pt on 3pt off 4pt,
+        -{Stealth[length=14pt,width=13pt]}] (0.9,0.33) -- (-2.47,6);
+  % Collision dots; the one outside the FOV (4) is not scored.
+  \foreach \p in {(-1.0,-5.6),(2.6,-8.4),(3.8,-15.6)} \fill[lucestep3] \p circle (0.32);
+  \fill[lucestep4] (-3.6,-12.2) circle (0.4);
+  \draw[lucestep4, line width=2pt] (-3.6,-12.2) circle (0.65);
+  % --- Profiles (6) ---------------------------------------------------------
+  \draw[luceframe, line width=2pt, fill=white, rounded corners=5mm] (10.4,-21.2) rectangle (21.0,2.7);
+  \node[anchor=west, dlab, text=luceframe] at (10.8,1.75) {\stepnum{6}{luceframe}\ Profiles};
+  \draw[lucetext, line width=2pt, -{Stealth[length=12pt,width=11pt]}] (11.8,0) -- (20.4,0)
+    node[anchor=south east, font=\fdraw, text=lucetext, inner sep=1mm] {signal};
+  \draw[lucetext, line width=2pt, -{Stealth[length=12pt,width=11pt]}] (11.8,0) -- (11.8,-20.4);
+  \node[font=\fdraw, text=lucetext, rotate=90] at (11.1,-8) {depth};
+  \draw[lucereal, line width=3.5pt] plot[domain=0.3:20, samples=80] ({11.8+7.6*exp(-\x/4.0)},{-\x});
+  \draw[lucetime, line width=3.5pt] plot[domain=0.3:20, samples=80] ({11.8+7.6*exp(-\x/8.5)},{-\x});
+  \node[dlab, text=lucereal, anchor=east] at (20.7,-10.5) {Real profile};
+  \node[dlab, text=lucetime, anchor=east, align=right] at (20.7,-14.2) {Time-based\\ profile};
+  % The last collision is added at its real depth z and at the time-based depth z_t.
+  \draw[lucereal, line width=2.5pt, dash pattern=on 9pt off 5pt] (3.8,-15.6) -- (11.8,-15.6);
+  \fill[lucereal] (11.8,-15.6) circle (0.28);
+  \node[font=\fdraw\bfseries, text=lucereal, anchor=south east, inner sep=1mm] at (11.6,-15.5) {$z$};
+  \draw[lucetime, line width=2.5pt, dash pattern=on 3pt off 5pt] (3.8,-15.6) -- (9.6,-19.4) -- (11.8,-19.4);
+  \fill[lucetime] (11.8,-19.4) circle (0.28);
+  \node[font=\fdraw\bfseries, text=lucetime, anchor=south east, inner sep=1mm] at (11.6,-19.3) {$z_t$};
+  % --- Labels ---------------------------------------------------------------
+  \node[dlab, text=luceframe, anchor=south east] at (-12.0,19.6) {Lidar};
+  \node[dlab, text=lucestep1, anchor=east] at (-8.1,8.2) {\stepnum{1}{lucestep1}\ Gaussian beam};
+  \node[dlab, text=lucestep2, anchor=west] at (-19.8,1.5) {\stepnum{2}{lucestep2}\ Sea surface};
+  \node[dlab, text=lucestep5, anchor=east, align=right] at (-7.2,4.2)
+    {\stepnum{5}{lucestep5}\ Signal to the receiver\\ at every scattering};
+  \draw[lucestep5, line width=1.5pt] (-7.1,4.2) -- (-4.35,4.2);
+  \node[dlab, text=lucestep5, anchor=south west] at (2.2,1.5) {\stepnum{5}{lucestep5}\ Glint};
+  \node[dlab, text=lucestep3, anchor=east] at (-4.0,-6.6) {\stepnum{3}{lucestep3}\ In-water scattering};
+  \draw[lucestep3, line width=1.5pt] (-3.9,-6.45) -- (-1.4,-5.85);
+  \node[dlab, text=lucestep4, anchor=east, align=right] at (-4.6,-12.6)
+    {\stepnum{4}{lucestep4}\ Photon outside the FOV\\ {\mdseries not scored}};
+  \node[dlab, text=lucestep4, anchor=west] at (-1.5,8.0)
+    {\stepnum{4}{lucestep4}\ Receiver field of view};
+\end{tikzpicture}}
+
+% ---------------------------------------------------------------------------
+% Background and aims: coloured chip and end-to-end mission simulator
+% ---------------------------------------------------------------------------
+% Chip in the Working hypothesis: black text on a light tint, in a thin frame of the colour of the matching step.
+\newcommand{\hchip}[2]{\tikz[baseline=(c.base)]\node[draw=#1, fill=#1!12, line width=2pt, text=lucetext, rounded corners=4mm,
+  inner xsep=2.5mm, inner ysep=1.2mm, outer sep=0pt] (c) {\strut #2};}
+% End-to-end mission simulator (slide 5 of the presentation); this work = the RTM.
+\newcommand{\picEtoE}{%
+\begin{tikzpicture}[e2e/.style={draw=lucetext!55, line width=2pt, rounded corners=4mm, minimum height=3.1cm,
+    align=center, font=\fbody, inner sep=4mm}]
+  \node[e2e, text width=7.2cm] (G) at (0,0) {Geophysical\\ settings};
+  \node[e2e, draw=lucestep2, line width=4pt, fill=lucestep2!10, text width=15.0cm, right=2.4cm of G] (R)
+    {{\fpanel\bfseries\color{lucestep2!70!black} Radiative transfer model}\\[1mm]
+     {\color{lucestep2!70!black} Monte Carlo, coupled air--sea system}};
+  \node[fill=lucestep2, text=white, rounded corners=4mm, inner xsep=4mm, inner ysep=1.4mm,
+        font=\fbody\bfseries] at (R.north east) {this work};
+  \node[e2e, text width=7.2cm, right=2.4cm of R] (I) {Instrument\\ model};
+  \node[e2e, text width=7.2cm, right=2.4cm of I] (S) {Simulated\\ signal};
+  \foreach \a/\b in {G/R,R/I,I/S} \draw[flowarrow, luceframe] (\a) -- (\b);
+\end{tikzpicture}}

@@ -1,0 +1,25 @@
+# Fortran build
+build/
+*.o
+*.mod
+mc_water
+
+# Python
+__pycache__/
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.bbl
+*.blg
+*.toc
+
+# Keep the simulation logs
+!runs/**/run.log
+
+# Digitized curves of Shangguan et al. (2025): not distributed
+data/

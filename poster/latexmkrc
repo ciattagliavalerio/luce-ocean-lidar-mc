@@ -1,0 +1,5 @@
+# Compile with:  latexmk poster_LUCE.tex
+$pdf_mode = 5;                                   # XeLaTeX.
+$xelatex  = 'xelatex -synctex=1 -interaction=nonstopmode -halt-on-error %O %S';
+$aux_dir  = 'build';                             # Auxiliary files out of the way.
+$emulate_aux = 1;
